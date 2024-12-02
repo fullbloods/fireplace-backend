@@ -23,7 +23,7 @@ public class FireController {
     private final LetterService letterService;
 
     @GetMapping("/{uuid}")
-    public CommonResponse<FireDto> get(@PathVariable UUID uuid) {
+    public CommonResponse<FireDto> get(@PathVariable("uuid") UUID uuid) {
         FireDto fire = service.findDtoByUUID(uuid);
 
         return new CommonResponse<>(HttpStatus.OK.value(), fire, true, null);
