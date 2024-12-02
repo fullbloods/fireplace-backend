@@ -38,9 +38,9 @@ public class LetterController {
         return new CommonResponse<>(HttpStatus.OK.value(), null, true, null);
     }
 
-    @PostMapping("/{uuid}/cert/admin")
-    public CommonResponse<Void> certAdmin(@PathVariable("uuid") String uuid, @RequestBody LetterPasswordDto dto) {
-        service.certAdmin(UUID.fromString(uuid), dto);
+    @PostMapping("/{uuid}/cert/owner")
+    public CommonResponse<Void> certOwner(@PathVariable("uuid") String uuid, @RequestBody LetterPasswordDto dto) {
+        service.certOwner(UUID.fromString(uuid), dto);
 
         return new CommonResponse<>(HttpStatus.OK.value(), null, true, null);
     }

@@ -123,7 +123,7 @@ public class LetterService {
         }
     }
 
-    public void certAdmin(UUID uuid, LetterPasswordDto dto) {
+    public void certOwner(UUID uuid, LetterPasswordDto dto) {
         LetterDto letter = this.findDtoByUUID(uuid);
 
         if (letter.getType().equals(LetterType.PUBLIC)) {
