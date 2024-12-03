@@ -27,24 +27,23 @@ public class LetterService {
     private final PasswordEncoder passwordEncoder;
 
     public LetterDto findDtoByUUID(UUID uuid) {
-        return repository.findById(uuid).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 편지입니다.")).toDto();
+        return repository.findById(uuid).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 편지입니다 :(")).toDto();
     }
 
     public LetterDto get(UUID uuid, LetterPasswordDto dto) {
         LetterDto letter = this.findDtoByUUID(uuid);
 
         if (letter.getStatus().equals(LetterStatus.CLOSED)) {
-            throw new IllegalStateException("아직 잠겨있는 편지입니다.");
+            throw new IllegalStateException("편지가 아직 도착하지 않았어요 :(");
         }
 
         if (letter.getType().equals(LetterType.PRIVATE)) {
-
             if (dto == null || dto.getPassword() == null) {
-                throw new IllegalArgumentException("비밀번호를 입력해주세요.");
+                throw new IllegalArgumentException("비밀번호를 입력해주세요!");
             }
 
-            if (!passwordEncoder.matches(dto.getPassword(), letter.getPassword()) || !passwordEncoder.matches(dto.getPassword(), letter.getFire().getPassword())) {
-                throw new IllegalStateException("잘못된 비밀번호입니다.");
+            if (!passwordEncoder.matches(dto.getPassword(), letter.getPassword()) && !passwordEncoder.matches(dto.getPassword(), letter.getFire().getPassword())) {
+                throw new IllegalStateException("잘못된 비밀번호입니다 :(");
             }
         }
 
@@ -84,7 +83,7 @@ public class LetterService {
             return LetterListResponse.builder()
                     .uuid(e.getUuid())
                     .name(e.getName())
-                    .diffDate(e.getType().equals(LetterType.PUBLIC) ? 0 : (int) ChronoUnit.DAYS.between(e.getOpenAt(), LocalDate.now()))
+                    .diffDate((int) ChronoUnit.DAYS.between(e.getOpenAt(), LocalDate.now()))
                     .type(e.getType())
                     .status(e.getStatus())
                     .build();
@@ -118,7 +117,7 @@ public class LetterService {
             throw new IllegalArgumentException("비밀번호를 입력해주세요.");
         }
 
-        if (!passwordEncoder.matches(dto.getPassword(), letter.getPassword()) || !passwordEncoder.matches(dto.getPassword(), letter.getFire().getPassword())) {
+        if (!passwordEncoder.matches(dto.getPassword(), letter.getPassword()) && !passwordEncoder.matches(dto.getPassword(), letter.getFire().getPassword())) {
             throw new IllegalStateException("잘못된 비밀번호입니다.");
         }
     }
