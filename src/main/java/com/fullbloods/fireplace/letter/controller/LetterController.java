@@ -17,7 +17,7 @@ import java.util.UUID;
 public class LetterController {
     private final LetterService service;
 
-    @GetMapping("/{uuid}")
+    @PostMapping("/{uuid}/get")
     public CommonResponse<LetterDto> get(@PathVariable("uuid") String uuid, @RequestBody(required = false) LetterPasswordDto dto) {
         LetterDto letter = service.get(UUID.fromString(uuid), dto);
 
