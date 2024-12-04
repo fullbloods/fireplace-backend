@@ -29,6 +29,9 @@ public class Fire {
     @OneToMany(mappedBy = "fire", cascade = {CascadeType.REMOVE}, orphanRemoval = true)
     private List<Letter> letters;
 
+    @JsonIgnore
+    private String ip;
+
     public FireDto toDto() {
         return FireDto.builder()
                 .uuid(uuid)

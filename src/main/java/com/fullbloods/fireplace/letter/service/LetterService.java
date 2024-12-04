@@ -9,7 +9,10 @@ import com.fullbloods.fireplace.letter.entity.Letter;
 import com.fullbloods.fireplace.letter.entity.LetterStatus;
 import com.fullbloods.fireplace.letter.entity.LetterType;
 import com.fullbloods.fireplace.letter.repository.LetterRepository;
+import com.fullbloods.fireplace.utils.AESCrypt;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -25,6 +28,9 @@ public class LetterService {
     private final LetterRepository repository;
     private final FireService fireService;
     private final PasswordEncoder passwordEncoder;
+
+    @Value("${aes.key}")
+    private String key;
 
     public LetterDto findDtoByUUID(UUID uuid) {
         return repository.findById(uuid).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 편지입니다 :(")).toDto();
@@ -47,10 +53,33 @@ public class LetterService {
             }
         }
 
+        String content = "";
+        String reply = null;
+
+        try {
+            if (letter.getType().equals(LetterType.PRIVATE)) {
+                content = AESCrypt.decrypt(letter.getContent(), key);
+
+                if (letter.getReply() != null) {
+                    reply = AESCrypt.decrypt(letter.getReply(), key);
+                }
+
+            } else {
+                content = letter.getContent();
+
+                reply = letter.getReply();
+            }
+        } catch (Exception e) {
+            throw new IllegalStateException(e);
+        }
+
+        letter.setContent(content);
+        letter.setReply(reply);
+
         return letter;
     }
 
-    public void create(UUID fireUUID, LetterCreateDto dto) {
+    public void create(UUID fireUUID, LetterCreateDto dto, HttpServletRequest request) {
         FireDto fire = fireService.findDtoByUUID(fireUUID);
 
         UUID uuid = UUID.randomUUID();
@@ -59,17 +88,30 @@ public class LetterService {
             uuid = UUID.randomUUID();
         }
 
+        String content = "";
+
+        try {
+            if (dto.isPrivate()) {
+                content = AESCrypt.encrypt(dto.getContent(), key);
+            } else {
+                content = dto.getContent();
+            }
+        } catch (Exception e) {
+            throw new IllegalStateException(e);
+        }
+
         Letter letter = Letter.builder()
                 .uuid(uuid)
                 .fire(fire.toEntity())
                 .name(dto.getName())
-                .content(dto.getContent())
+                .content(content)
                 .music(dto.getMusic())
                 .type(dto.isPrivate() ? LetterType.PRIVATE : LetterType.PUBLIC)
                 .password(passwordEncoder.encode(dto.getPassword()))
                 .createdAt(LocalDateTime.now())
                 .openAt(dto.getOpenAt())
                 .isRead(false)
+                .ip(request.getRemoteAddr())
                 .build();
 
         repository.save(letter);
@@ -99,7 +141,21 @@ public class LetterService {
             throw new IllegalArgumentException("편지 주인만 답장할 수 있습니다.");
         }
 
-        letter.setReply(dto.getMessage());
+        String message = "";
+
+        try {
+
+            if (letter.getType().equals(LetterType.PRIVATE)) {
+                message = AESCrypt.encrypt(dto.getMessage(), key);
+            } else {
+                message = dto.getMessage();
+            }
+
+        } catch (Exception e) {
+            throw new IllegalStateException(e);
+        }
+
+        letter.setReply(message);
         letter.setReplyAt(LocalDateTime.now());
         letter.setReplyMusic(dto.getMusic());
 
