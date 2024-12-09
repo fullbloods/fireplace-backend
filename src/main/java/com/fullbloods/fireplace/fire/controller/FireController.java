@@ -8,6 +8,7 @@ import com.fullbloods.fireplace.fire.service.FireService;
 import com.fullbloods.fireplace.letter.dto.LetterCreateDto;
 import com.fullbloods.fireplace.letter.dto.response.LetterListResponse;
 import com.fullbloods.fireplace.letter.service.LetterService;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -30,8 +31,8 @@ public class FireController {
     }
 
     @PostMapping("")
-    public CommonResponse<FireUUIDResponse> create(@RequestBody FireCreateDto dto) {
-        UUID uuid = service.create(dto);
+    public CommonResponse<FireUUIDResponse> create(@RequestBody FireCreateDto dto, HttpServletRequest request) {
+        UUID uuid = service.create(dto, request);
 
         FireUUIDResponse response = FireUUIDResponse.builder()
                 .uuid(uuid)
@@ -41,8 +42,8 @@ public class FireController {
     }
 
     @PostMapping("/{uuid}/letter")
-    public CommonResponse<Void> createLetter(@PathVariable("uuid") String uuid, @RequestBody LetterCreateDto dto) {
-        letterService.create(UUID.fromString(uuid), dto);
+    public CommonResponse<Void> createLetter(@PathVariable("uuid") String uuid, @RequestBody LetterCreateDto dto, HttpServletRequest request) {
+        letterService.create(UUID.fromString(uuid), dto, request);
 
         return new CommonResponse<>(HttpStatus.OK.value(), null, true, null);
     }

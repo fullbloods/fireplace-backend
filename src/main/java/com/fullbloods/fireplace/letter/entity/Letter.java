@@ -49,6 +49,9 @@ public class Letter {
 
     private boolean isRead;
 
+    @JsonIgnore
+    private String ip;
+
     public LetterDto toDto() {
         return LetterDto.builder()
                 .uuid(uuid)
